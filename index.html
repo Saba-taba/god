@@ -1,0 +1,728 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Princess Night Sky</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout concept: a night-sky journey. One narrow column of "stops" over a starfield that drifts with the pointer, with indigo heart stickers raining on top. */
+:root{
+  --night:#080c2b;
+  --deep:#0f1650;
+  --indigo:#1d2a8c;
+  --royal:#4458e8;
+  --glow:#9fb0ff;
+  --ice:#e8ecff;
+  --muted:#b3bce8;
+  --gold:#ffd27a;
+  --glass:rgba(24,34,120,.38);
+  --line:rgba(159,176,255,.26);
+  --display:'Cormorant Garamond','Georgia',serif;
+  --body:'DM Sans','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background-color:var(--night);
+  background-image:radial-gradient(120% 60% at 50% -8%,#1c2788 0%,rgba(28,39,136,0) 62%),linear-gradient(180deg,#080c2b 0%,#0c1346 55%,#080c2b 100%);
+  background-attachment:fixed;
+  color:var(--ice);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:8px 80px;
+}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#rain{position:fixed;inset:0;width:100%;height:100%;z-index:40;pointer-events:none}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:50;pointer-events:none}
+#app{position:relative;z-index:1}
+.wrap{max-width:720px;margin-inline:auto}
+h1,h2,h3,p{margin:0}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* hero */
+.hero{text-align:center;padding-block:48px 8px;cursor:default}
+.crown{width:84px;height:auto;display:block;margin:0 auto 4px;filter:drop-shadow(0 0 12px rgba(255,210,122,.55))}
+.hero h1{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(4.2rem,20vw,8.2rem);line-height:1.1;color:var(--ice);text-shadow:0 0 28px rgba(120,140,255,.75),0 0 60px rgba(68,88,232,.5)}
+.hero .sub{font-size:1.15rem;color:var(--muted);max-width:30ch;margin:10px auto 26px}
+.btn{font:inherit;font-weight:500;background:var(--royal);color:#fff;border:0;border-radius:999px;padding:10px 26px;cursor:pointer;transition:background .2s,transform .15s;min-height:44px}
+.btn:hover{background:#5a6cf5}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ice)}
+.btn.ghost:hover{background:rgba(159,176,255,.12)}
+.btn.gold{background:var(--gold);color:#2a1d00}
+.btn.gold:hover{background:#ffe0a0}
+
+/* stops */
+.stop{margin-top:84px}
+.eyebrow{color:var(--gold);font-size:.85rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.stop h2{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,8vw,3.2rem);line-height:1.15;text-wrap:balance;margin-top:4px}
+.lead{color:var(--muted);margin-top:6px;margin-bottom:18px}
+.panel{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:22px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+
+/* letter */
+.letter{display:grid;gap:16px;font-size:1.08rem}
+.letter .to{font-family:var(--display);font-style:italic;font-size:1.9rem;color:var(--gold);line-height:1.3}
+.letter .from{font-family:var(--display);font-style:italic;font-size:1.6rem;color:var(--glow);margin-top:4px}
+
+/* mood */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.chip{background:transparent;border:1px solid var(--line);color:var(--ice);border-radius:999px;padding:8px 20px;cursor:pointer;font-size:1rem;min-height:44px;transition:background .2s,border-color .2s}
+.chip:hover{background:rgba(159,176,255,.12)}
+.chip[aria-pressed="true"]{background:var(--royal);border-color:var(--royal)}
+.say{min-height:5.4em;font-size:1.08rem}
+.say.pop{animation:rise .5s ease both}
+
+/* catch game */
+.hud{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;font-variant-numeric:tabular-nums;color:var(--muted);flex-wrap:wrap}
+.hud b{color:var(--ice);font-weight:700}
+.arena{position:relative;border-radius:22px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,#0e1654,#070b28)}
+.arena canvas{display:block;width:100%;height:340px;touch-action:manipulation}
+.over{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;text-align:center;padding:20px;background:rgba(7,11,40,.72)}
+.over[hidden]{display:none}
+.over p{max-width:32ch}
+.note{margin-top:12px;min-height:3.2em;color:var(--gold)}
+
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mcard{aspect-ratio:1;perspective:700px;background:none;border:0;padding:0;cursor:pointer}
+.mcard .in{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s}
+.mcard.up .in{transform:rotateY(180deg)}
+.mcard .f,.mcard .b{position:absolute;inset:0;border-radius:14px;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.mcard .f{background:linear-gradient(145deg,#2b3dbb,#16206f);border:1px solid var(--line);color:var(--glow);font-size:1.4rem}
+.mcard .b{transform:rotateY(180deg);background:var(--ice);font-size:clamp(1.7rem,9vw,2.5rem)}
+.mcard.done .b{background:#ffe3a6}
+
+/* reasons */
+.lanterns{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.lan{aspect-ratio:1/1.05;border:1px solid var(--line);background:rgba(26,38,130,.4);border-radius:18px 18px 30px 30px;color:var(--muted);font-family:var(--display);font-weight:700;font-size:1.9rem;cursor:pointer;transition:background .3s,box-shadow .3s,color .3s}
+.lan:hover{background:rgba(68,88,232,.45)}
+.lan.lit{background:radial-gradient(circle at 50% 40%,#ffe2a0,#f0b84e);color:#2a1d00;box-shadow:0 0 26px rgba(255,210,122,.5)}
+.lan.sel{outline:2px solid var(--ice);outline-offset:2px}
+.reason{min-height:4.4em;font-size:1.1rem}
+
+/* quiz */
+.q{font-size:1.15rem;font-weight:500;margin-bottom:14px}
+.opts{display:grid;gap:10px}
+.opt{text-align:start;background:transparent;border:1px solid var(--line);color:var(--ice);border-radius:16px;padding:12px 16px;font-size:1rem;cursor:pointer;min-height:48px;transition:background .2s}
+.opt:hover:not(:disabled){background:rgba(159,176,255,.14)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.pick{opacity:1;background:var(--royal);border-color:var(--royal)}
+.react{margin-top:14px;color:var(--gold);min-height:3.2em}
+.qfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;color:var(--muted);font-size:.9rem}
+
+/* perks */
+.coupons{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.coupon{height:168px;perspective:800px;background:none;border:0;padding:0;cursor:pointer;color:inherit}
+.coupon .in{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s}
+.coupon.open .in{transform:rotateY(180deg)}
+.coupon .f,.coupon .b{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;place-content:center;justify-items:center;gap:4px;padding:14px;text-align:center}
+.coupon .f{background:linear-gradient(150deg,#2c3fc2,#141c66);border:1px dashed var(--glow)}
+.coupon .f strong{font-family:var(--display);font-style:italic;font-size:1.8rem;color:var(--gold);line-height:1.2}
+.coupon .f span{font-size:.85rem;color:var(--muted)}
+.coupon .b{transform:rotateY(180deg);background:#f1f3ff;color:#121a5c;font-size:.95rem;line-height:1.5}
+.coupon .b small{display:block;font-size:.75rem;color:#4d5aa8;margin-top:6px}
+
+/* final */
+.arena2{position:relative;height:230px;border-radius:22px;border:1px dashed var(--line);background:rgba(24,34,120,.25);overflow:hidden}
+.nope{position:absolute;left:calc(50% - 100px);top:calc(50% - 24px);width:200px;background:var(--gold);color:#2a1d00;transition:left .22s,top .22s;font-weight:700}
+.nope:hover{background:#ffe0a0}
+.finale{margin-top:32px;text-align:center}
+.finale[hidden]{display:none}
+.finale .panel{padding:30px 22px;border-color:rgba(255,210,122,.45);box-shadow:0 0 50px rgba(68,88,232,.35)}
+.finale h3{font-family:var(--display);font-style:italic;font-size:clamp(2.2rem,9vw,3.4rem);color:var(--gold);line-height:1.15}
+.finale p{font-size:1.1rem;margin-top:12px}
+.finale .sign{font-family:var(--display);font-style:italic;font-size:2rem;color:var(--glow);margin-top:18px}
+.reveal{animation:rise .9s ease both}
+.foot{margin-top:70px;text-align:center;color:var(--muted);font-size:.9rem}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.crown{animation:bob 4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:420px){
+  .panel{padding:18px}
+  .hero{padding-top:36px}
+}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="rain" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div id="app" dir="ltr" lang="en">
+<main class="wrap">
+
+  <header class="hero" id="hero">
+    <svg class="crown" viewBox="0 0 64 42" aria-hidden="true" fill="none" stroke="#ffd27a" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M6 34 L9 11 L22 23 L32 6 L42 23 L55 11 L58 34 Z"/>
+      <path d="M8 39 H56"/>
+      <circle cx="9" cy="8.5" r="2.6" fill="#ffd27a" stroke="none"/>
+      <circle cx="32" cy="3.5" r="2.6" fill="#ffd27a" stroke="none"/>
+      <circle cx="55" cy="8.5" r="2.6" fill="#ffd27a" stroke="none"/>
+    </svg>
+    <h1>Princess</h1>
+    <p class="sub">A little night sky made just for you. A few games, some kind words, and a couple of surprises.</p>
+    <button class="btn" id="startBtn" type="button">Let's begin</button>
+  </header>
+
+  <section class="stop" id="s1">
+    <div class="eyebrow">Stop one</div>
+    <h2>A few words about you</h2>
+    <p class="lead">Take your time with this one.</p>
+    <div class="panel letter">
+      <p class="to">Dear Princess,</p>
+      <p>I made this little corner just for you, so you'd have a place to smile for a few minutes whenever you feel like it.</p>
+      <p>Some people walk into a room and it quietly gets brighter. You're one of them. It's in the way you smile, the way you carry yourself, and the way you make everyone around you feel at ease.</p>
+      <p>You're beautiful, and not only in the way a mirror can show. There's a calm kindness in you, a sharp sense of humor, and a strength that never needs to announce itself.</p>
+      <p>It's rare to meet someone who feels this complete: warm, genuine, thoughtful and confident all at once. Please never forget that about yourself.</p>
+      <p>So explore, play and smile. This place is yours.</p>
+      <p class="from">With admiration</p>
+    </div>
+  </section>
+
+  <section class="stop" id="s2">
+    <div class="eyebrow">Stop two</div>
+    <h2>How are you tonight?</h2>
+    <p class="lead">Pick one and get a little something just for that mood.</p>
+    <div class="panel">
+      <div class="chips" id="moodChips" role="group" aria-label="Tonight's mood">
+        <button class="chip" type="button" data-m="happy" aria-pressed="false">I'm happy</button>
+        <button class="chip" type="button" data-m="tired" aria-pressed="false">I'm tired</button>
+        <button class="chip" type="button" data-m="sad" aria-pressed="false">I'm feeling low</button>
+      </div>
+      <p class="say" id="moodSay" aria-live="polite">Whatever mood you're in, you're welcome here.</p>
+    </div>
+  </section>
+
+  <section class="stop" id="s3">
+    <div class="eyebrow">Stop three</div>
+    <h2>Catch the stars</h2>
+    <p class="lead">You have thirty seconds to catch as many stars as you can before they fall. Watch out for the golden one.</p>
+    <div class="hud" aria-live="polite">
+      <span>Stars: <b id="cScore">0</b></span>
+      <span>Time: <b id="cTime">30</b></span>
+      <span>Best: <b id="cBest">0</b></span>
+    </div>
+    <div class="arena">
+      <canvas id="catchCv" aria-label="Star catching game"></canvas>
+      <div class="over" id="cOver">
+        <p id="cOverText">Tap or click each star to catch it.</p>
+        <button class="btn" id="cStart" type="button">Start game</button>
+      </div>
+    </div>
+    <p class="note" id="cNote" aria-live="polite"></p>
+  </section>
+
+  <section class="stop" id="s4">
+    <div class="eyebrow">Stop four</div>
+    <h2>Match the pairs</h2>
+    <p class="lead">Six pairs are hiding. Find both halves and they stay face up.</p>
+    <div class="panel">
+      <div class="hud"><span>Moves: <b id="mMoves">0</b></span><span>Pairs found: <b id="mPairs">0</b> of 6</span></div>
+      <div class="mem" id="memGrid"></div>
+      <p class="note" id="mNote" aria-live="polite"></p>
+      <button class="btn ghost" id="mAgain" type="button">Shuffle again</button>
+    </div>
+  </section>
+
+  <section class="stop" id="s5">
+    <div class="eyebrow">Stop five</div>
+    <h2>Nine lanterns</h2>
+    <p class="lead">Light each lantern to see one of the things that make you so wonderful.</p>
+    <div class="panel">
+      <div class="lanterns" id="lanterns"></div>
+      <p class="reason" id="reason" aria-live="polite">Tap a lantern.</p>
+      <div class="hud" style="margin:10px 0 0"><span>Lit: <b id="lCount">0</b> of 9</span></div>
+    </div>
+  </section>
+
+  <section class="stop" id="s6">
+    <div class="eyebrow">Stop six</div>
+    <h2>The Princess pop quiz</h2>
+    <p class="lead">Four questions. There are no wrong answers, but every answer gets a reaction.</p>
+    <div class="panel" id="quiz"></div>
+  </section>
+
+  <section class="stop" id="s7">
+    <div class="eyebrow">Stop seven</div>
+    <h2>Princess perks</h2>
+    <p class="lead">Six perks, all yours. Tap one to open it.</p>
+    <div class="coupons" id="coupons"></div>
+  </section>
+
+  <section class="stop" id="s8">
+    <div class="eyebrow">Last stop</div>
+    <h2>The forbidden button</h2>
+    <p class="lead">Whatever you do, don't press it. Seriously.</p>
+    <div class="arena2" id="arena2">
+      <button class="btn nope" id="nope" type="button">Don't press this</button>
+    </div>
+
+    <div class="finale" id="finale" hidden>
+      <div class="panel reveal">
+        <h3>One last thing</h3>
+        <p>If you made it this far, you caught the stars, found every pair and chased down a very stubborn button. That's very you.</p>
+        <p>You don't need a crown to be a princess. You're beautiful, kind and wonderfully complete exactly as you are.</p>
+        <p>Come back whenever you like. This corner of the sky is yours.</p>
+        <p class="sign">Keep shining</p>
+        <p style="margin-top:20px"><button class="btn gold" id="againFx" type="button">Throw more stars</button></p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">Made with care, for a night full of stars.</p>
+</main>
+</div>
+
+<script>
+(function(){
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+  function $(s){ return document.querySelector(s); }
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
+  function store(k, v){ try { if (v===undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e){ return null; } }
+  function mod(v,m){ return ((v % m) + m) % m; }
+
+  /* shape helpers */
+  function starPath(c,x,y,r,rot){
+    c.beginPath();
+    for (var i=0;i<10;i++){
+      var rad = i%2===0 ? r : r*0.45;
+      var a = rot + i*Math.PI/5 - Math.PI/2;
+      var px = x + Math.cos(a)*rad, py = y + Math.sin(a)*rad;
+      if (i===0) c.moveTo(px,py); else c.lineTo(px,py);
+    }
+    c.closePath();
+  }
+  function heartPath(c,x,y,r){
+    c.beginPath();
+    c.moveTo(x, y + r*0.9);
+    c.bezierCurveTo(x - r*1.6, y - r*0.1, x - r*0.8, y - r*1.3, x, y - r*0.4);
+    c.bezierCurveTo(x + r*0.8, y - r*1.3, x + r*1.6, y - r*0.1, x, y + r*0.9);
+    c.closePath();
+  }
+
+  /* ---------- starfield that follows the pointer ---------- */
+  var sky = $('#sky'), sx = sky.getContext('2d'), SW=0, SH=0, bgStars=[];
+  var mx = 0, my = 0, ox = 0, oy = 0;
+  function skyResize(){
+    var d = Math.min(window.devicePixelRatio||1, 2);
+    SW = window.innerWidth; SH = window.innerHeight;
+    sky.width = SW*d; sky.height = SH*d; sx.setTransform(d,0,0,d,0,0);
+    var n = Math.min(170, Math.floor(SW*SH/7500));
+    bgStars = [];
+    for (var i=0;i<n;i++){
+      var r = rand(.3,1.7);
+      bgStars.push({x:Math.random()*SW,y:Math.random()*SH,r:r,z:.25+r*.7,p:rand(0,6.28),s:rand(.6,1.8),g:Math.random()<.12});
+    }
+    rainResize();
+    drawSky(0);
+  }
+  function drawSky(t){
+    if (!reduce){
+      ox += (-mx*140 - ox)*.07;
+      oy += (-my*140 - oy)*.07;
+    }
+    var scr = reduce ? 0 : (window.scrollY||0)*.18;
+    sx.clearRect(0,0,SW,SH);
+    for (var i=0;i<bgStars.length;i++){
+      var s = bgStars[i];
+      var a = reduce ? .7 : .35 + .65*Math.abs(Math.sin(s.p + t*0.001*s.s));
+      var x = mod(s.x + ox*s.z, SW), y = mod(s.y + oy*s.z - scr*s.z, SH);
+      sx.globalAlpha = a;
+      sx.fillStyle = s.g ? '#ffd27a' : '#dfe5ff';
+      sx.beginPath(); sx.arc(x,y,s.r,0,6.283); sx.fill();
+    }
+    sx.globalAlpha = 1;
+  }
+  window.addEventListener('pointermove', function(e){
+    mx = e.clientX/Math.max(SW,1) - .5;
+    my = e.clientY/Math.max(SH,1) - .5;
+  }, {passive:true});
+
+  /* ---------- falling indigo heart stickers ---------- */
+  var rain = $('#rain'), rc = rain.getContext('2d'), drops = [], lastRainT = 0;
+  var HEART_FILLS = ['#3b4fe0','#2a3bb8','#4a5df0','#27358f','#3346c9'];
+  function newDrop(initial){
+    var s = rand(16,32);
+    return {x:rand(0,SW), y:initial ? rand(-SH,SH) : rand(-70,-24), s:s, vy:rand(38,78)*(s/24), sw:rand(0,6.28), sf:rand(.5,1.2), amp:rand(8,24), rot:rand(-.5,.5), vr:rand(-.5,.5), c:pick(HEART_FILLS)};
+  }
+  function rainResize(){
+    var d = Math.min(window.devicePixelRatio||1, 2);
+    rain.width = SW*d; rain.height = SH*d; rc.setTransform(d,0,0,d,0,0);
+    if (reduce) return;
+    var n = Math.max(8, Math.min(24, Math.floor(SW/45)));
+    drops = [];
+    for (var i=0;i<n;i++) drops.push(newDrop(true));
+  }
+  function drawRain(t){
+    var dt = Math.min((t - lastRainT)/1000, .05); lastRainT = t;
+    rc.clearRect(0,0,SW,SH);
+    for (var i=0;i<drops.length;i++){
+      var d = drops[i];
+      d.y += d.vy*dt; d.rot += d.vr*dt;
+      if (d.y > SH + 50){ drops[i] = newDrop(false); continue; }
+      var x = d.x + Math.sin(d.sw + t*0.001*d.sf)*d.amp;
+      rc.save();
+      rc.translate(x, d.y); rc.rotate(d.rot);
+      rc.shadowColor = d.type === 'lightblue' ? 'rgba(92,225,230,.8)' : 'rgba(5,8,32,.55)';
+      rc.shadowBlur = d.type === 'lightblue' ? 14 : 8;
+      rc.shadowOffsetY = 2;
+      heartPath(rc, 0, 0, d.s*.4);
+      rc.lineJoin = 'round'; rc.lineWidth = 5; rc.strokeStyle = 'rgba(232,236,255,.95)'; rc.stroke();
+      rc.shadowColor = 'transparent';
+      rc.fillStyle = d.c; rc.fill();
+      rc.fillStyle = 'rgba(255,255,255,.32)';
+      rc.beginPath(); rc.ellipse(-d.s*.2, -d.s*.2, d.s*.1, d.s*.055, -.6, 0, 6.283); rc.fill();
+      rc.restore();
+    }
+  }
+  function skyLoop(t){ drawSky(t); drawRain(t); requestAnimationFrame(skyLoop); }
+  skyResize();
+  if (!reduce) requestAnimationFrame(function(t){ lastRainT = t; skyLoop(t); });
+
+  /* ---------- confetti / burst ---------- */
+  var fx = $('#fx'), fc = fx.getContext('2d'), parts = [], fxOn = false;
+  var COLORS = ['#ffd27a','#9fb0ff','#e8ecff','#7e90ff','#4458e8'];
+  function fxResize(){
+    var d = Math.min(window.devicePixelRatio||1, 2);
+    fx.width = window.innerWidth*d; fx.height = window.innerHeight*d; fc.setTransform(d,0,0,d,0,0);
+  }
+  function burst(x,y,n){
+    n = n || 40; if (reduce) n = Math.min(n, 8);
+    for (var i=0;i<n;i++){
+      var a = rand(0,6.283), v = rand(2,7);
+      parts.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2.5,life:1,d:rand(.008,.018),r:rand(5,10),k:Math.random()<.4?'h':'s',c:pick(COLORS),rot:rand(0,6),vr:rand(-.1,.1)});
+    }
+    if (!fxOn){ fxOn = true; requestAnimationFrame(fxLoop); }
+  }
+  function fxLoop(){
+    fc.clearRect(0,0,fx.width,fx.height);
+    var next = [];
+    for (var i=0;i<parts.length;i++){
+      var p = parts[i];
+      p.x += p.vx; p.y += p.vy; p.vy += .13; p.vx *= .99; p.rot += p.vr; p.life -= p.d;
+      if (p.life > 0){
+        fc.globalAlpha = Math.max(p.life,0);
+        fc.fillStyle = p.c;
+        if (p.k==='h') heartPath(fc,p.x,p.y,p.r*.7); else starPath(fc,p.x,p.y,p.r,p.rot);
+        fc.fill();
+        next.push(p);
+      }
+    }
+    fc.globalAlpha = 1;
+    parts = next;
+    if (parts.length) requestAnimationFrame(fxLoop); else { fxOn = false; fc.clearRect(0,0,fx.width,fx.height); }
+  }
+  function burstAtEl(node, n){
+    var r = node.getBoundingClientRect();
+    burst(r.left + r.width/2, r.top + r.height/2, n);
+  }
+  function celebrate(n){
+    var w = window.innerWidth, h = window.innerHeight;
+    for (var i=0;i<4;i++) (function(i){ setTimeout(function(){ burst(rand(w*.15,w*.85), rand(h*.2,h*.55), n||36); }, i*260); })(i);
+  }
+  fxResize();
+  window.addEventListener('resize', function(){ skyResize(); fxResize(); sizeCatch(); });
+
+  /* ---------- hero ---------- */
+  $('#startBtn').addEventListener('click', function(e){
+    burstAtEl(e.currentTarget, 30);
+    $('#s1').scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
+  });
+  $('#hero').addEventListener('pointerdown', function(e){
+    if (e.target.closest('button')) return;
+    burst(e.clientX, e.clientY, 10);
+  });
+
+  /* ---------- mood ---------- */
+  var MOODS = {
+    happy: "Then let's celebrate. Your happiness is contagious, and the world looks better when you're glowing. Hold on to whatever made today good.",
+    tired: "Take a deep breath. Whatever today was, it's done, and you handled it with more grace than you realize. Rest tonight. You've earned it.",
+    sad: "It's okay to feel low. You don't have to be strong all the time. Be as gentle with yourself as you would be with a good friend. This will pass, and you're not alone."
+  };
+  var chips = document.querySelectorAll('#moodChips .chip');
+  chips.forEach(function(ch){
+    ch.addEventListener('click', function(){
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', c===ch ? 'true':'false'); });
+      var s = $('#moodSay'); s.textContent = MOODS[ch.dataset.m];
+      s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+      if (ch.dataset.m==='happy') burstAtEl(ch, 24);
+    });
+  });
+
+  /* ---------- catch the stars ---------- */
+  var cv = $('#catchCv'), cc = cv.getContext('2d');
+  var cw=0, ch2=0, items=[], sparks=[], score=0, tleft=30, running=false, lastT=0, spawnT=0, spawnN=0, goldHit=false, best=Number(store('princess-best')||0)||0;
+  $('#cBest').textContent = String(best);
+  function sizeCatch(){
+    var d = Math.min(window.devicePixelRatio||1, 2);
+    cw = cv.clientWidth; ch2 = cv.clientHeight;
+    if (!cw) return;
+    cv.width = cw*d; cv.height = ch2*d; cc.setTransform(d,0,0,d,0,0);
+    drawCatch();
+  }
+  function drawCatch(){
+    cc.clearRect(0,0,cw,ch2);
+    var i, it, sp;
+    for (i=0;i<items.length;i++){
+      it = items[i];
+      cc.save();
+      cc.shadowColor = it.gold ? 'rgba(255,210,122,.9)' : 'rgba(159,176,255,.8)';
+      cc.shadowBlur = it.gold ? 20 : 12;
+      cc.fillStyle = it.gold ? '#ffd27a' : '#cfd8ff';
+      starPath(cc, it.x, it.y, it.r, it.rot);
+      cc.fill();
+      cc.restore();
+    }
+    for (i=0;i<sparks.length;i++){
+      sp = sparks[i];
+      cc.globalAlpha = Math.max(sp.life,0);
+      cc.fillStyle = sp.c;
+      cc.beginPath(); cc.arc(sp.x,sp.y,2.4,0,6.283); cc.fill();
+    }
+    cc.globalAlpha = 1;
+  }
+  function catchLoop(t){
+    if (!running) return;
+    var dt = Math.min((t - lastT)/1000, .05); lastT = t;
+    tleft -= dt; spawnT += dt;
+    var rate = Math.max(.32, .6 - (30-tleft)*.008);
+    if (spawnT > rate){
+      spawnT = 0; spawnN++;
+      var gold = spawnN % 9 === 0;
+      items.push({x:rand(26,cw-26), y:-24, vy:rand(70,120)+(30-tleft)*3, r:gold?21:15, gold:gold, rot:rand(0,6), vr:rand(-1.5,1.5)});
+    }
+    var next = [];
+    for (var i=0;i<items.length;i++){
+      var it = items[i]; it.y += it.vy*dt; it.rot += it.vr*dt;
+      if (it.y < ch2+30) next.push(it);
+    }
+    items = next;
+    var ns = [];
+    for (var j=0;j<sparks.length;j++){
+      var sp = sparks[j]; sp.x += sp.vx; sp.y += sp.vy; sp.life -= .04;
+      if (sp.life>0) ns.push(sp);
+    }
+    sparks = ns;
+    $('#cTime').textContent = String(Math.max(0, Math.ceil(tleft)));
+    drawCatch();
+    if (tleft <= 0){ endCatch(); return; }
+    requestAnimationFrame(catchLoop);
+  }
+  function startCatch(){
+    items = []; sparks = []; score = 0; tleft = 30; spawnT = 0; spawnN = 0; goldHit = false;
+    $('#cScore').textContent = '0'; $('#cTime').textContent = '30'; $('#cNote').textContent = '';
+    $('#cOver').hidden = true;
+    running = true; lastT = performance.now(); requestAnimationFrame(catchLoop);
+  }
+  function endCatch(){
+    running = false; items = []; drawCatch();
+    var msg;
+    if (score < 8) msg = "The stars will wait for you to try again. Honestly, you're already one of them.";
+    else if (score < 18) msg = "Nicely done! The sky is a little dimmer tonight because you collected so many.";
+    else msg = "Star collector! There's nothing left in the sky. You caught them all.";
+    if (score > best){ best = score; store('princess-best', String(best)); $('#cBest').textContent = String(best); msg += ' New personal best!'; if (score >= 8) celebrate(24); }
+    $('#cOverText').textContent = "Time's up. You scored " + score + ". " + msg;
+    $('#cStart').textContent = 'Play again';
+    $('#cOver').hidden = false;
+  }
+  cv.addEventListener('pointerdown', function(e){
+    if (!running) return;
+    var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    for (var i=items.length-1;i>=0;i--){
+      var it = items[i], dx = x-it.x, dy = y-it.y, hit = it.r + 16;
+      if (dx*dx + dy*dy <= hit*hit){
+        score += it.gold ? 3 : 1;
+        $('#cScore').textContent = String(score);
+        for (var k=0;k<10;k++) sparks.push({x:it.x,y:it.y,vx:rand(-2.4,2.4),vy:rand(-2.4,2.4),life:1,c:it.gold?'#ffd27a':'#e8ecff'});
+        if (it.gold && !goldHit){ goldHit = true; $('#cNote').textContent = "A golden star! This one is for you. May every wish you make come true."; }
+        items.splice(i,1);
+        break;
+      }
+    }
+  });
+  $('#cStart').addEventListener('click', startCatch);
+  sizeCatch();
+
+  /* ---------- memory game ---------- */
+  var FACES = ['🌙','⭐','💙','💦','🌶️','🎀'];
+  var grid = $('#memGrid'), first = null, lock = false, moves = 0, pairs = 0;
+  function buildMem(){
+    grid.innerHTML = ''; first = null; lock = false; moves = 0; pairs = 0;
+    $('#mMoves').textContent = '0'; $('#mPairs').textContent = '0'; $('#mNote').textContent = '';
+    shuffle(FACES.concat(FACES)).forEach(function(face){
+      var b = el('button','mcard'); b.type = 'button'; b.dataset.f = face; b.setAttribute('aria-label','Card');
+      b.innerHTML = '<span class="in"><span class="f">✦</span><span class="b"></span></span>';
+      b.querySelector('.b').textContent = face;
+      b.addEventListener('click', function(){ flip(b); });
+      grid.appendChild(b);
+    });
+  }
+  function flip(b){
+    if (lock || b.classList.contains('up')) return;
+    b.classList.add('up');
+    if (!first){ first = b; return; }
+    moves++; $('#mMoves').textContent = String(moves);
+    var a = first; first = null;
+    if (a.dataset.f === b.dataset.f){
+      a.classList.add('done'); b.classList.add('done'); pairs++;
+      $('#mPairs').textContent = String(pairs);
+      if (pairs === 6){
+        $('#mNote').textContent = 'Every pair found in ' + moves + ' moves. Sharp eyes and a sharp mind, which is no surprise.';
+        celebrate(30);
+      }
+    } else {
+      lock = true;
+      setTimeout(function(){ a.classList.remove('up'); b.classList.remove('up'); lock = false; }, reduce ? 200 : 750);
+    }
+  }
+  $('#mAgain').addEventListener('click', buildMem);
+  buildMem();
+
+  /* ---------- lanterns ---------- */
+  var REASONS = [
+    'Your smile. It changes the mood of an entire room.',
+    'Your kindness, which shows up even in the smallest moments.',
+    'The way you carry yourself: calm, graceful and confident.',
+    'Your presence and your style. You are effortlessly beautiful.',
+    'Your sense of humor, quick and genuinely fun.',
+    'Your strength, even on the days you do not feel strong.',
+    'How much you care about the people around you.',
+    'Your curiosity, and the way you light up about the things you love.',
+    'How completely you are yourself. That might be the best part.'
+  ];
+  var lit = {}, litN = 0, lanWrap = $('#lanterns');
+  REASONS.forEach(function(txt, i){
+    var b = el('button','lan', String(i+1)); b.type = 'button'; b.setAttribute('aria-label','Lantern ' + (i+1));
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.lan.sel').forEach(function(x){ x.classList.remove('sel'); });
+      b.classList.add('sel');
+      if (!lit[i]){ lit[i] = true; litN++; b.classList.add('lit'); $('#lCount').textContent = String(litN); burstAtEl(b, 14); }
+      var r = $('#reason');
+      r.textContent = txt;
+      if (litN === 9){ r.textContent = txt + ' That makes nine, but the list honestly keeps going.'; }
+    });
+    lanWrap.appendChild(b);
+  });
+
+  /* ---------- quiz ---------- */
+  var QZ = [
+    {q:'If you could go anywhere tonight, where would it be?', o:[
+      ['Under a sky full of stars','Excellent choice. It has the best view in the world.'],
+      ['A cozy café with hot chocolate','Great pick. Hot chocolate fixes a surprising amount of things.'],
+      ['Under a blanket at home','Genius move. Maximum comfort, zero effort.']]},
+    {q:'What do you do when you are really happy?', o:[
+      ['I dance','Graceful and joyful. Of course you do.'],
+      ['I laugh until I can barely breathe','That laugh is probably the best sound in the world.'],
+      ['I start ten projects at once','A true visionary. Finishing things is for assistants.']]},
+    {q:'Which treat wins?', o:[
+      ['Ice cream','A classic. Works in any weather and any mood.'],
+      ['Chocolate','Hard to argue with that.'],
+      ['Both, right now','A person of excellent judgment.']]},
+    {q:'How good of a person are you, really?', o:[
+      ['Pretty good','Understatement of the year.'],
+      ['Very good','Closer, but the evidence points even higher.'],
+      ['Ask everyone who knows me','Smart answer. They would all say the same thing.']]}
+  ];
+  var qi = 0, qbox = $('#quiz');
+  function renderQ(){
+    qbox.innerHTML = '';
+    if (qi >= QZ.length){
+      qbox.appendChild(el('p','q','Your score: 20 out of 20.'));
+      qbox.appendChild(el('p','react','There were no wrong answers, which suits you.'));
+      var again = el('button','btn ghost','Start over'); again.type = 'button';
+      again.style.marginTop = '14px';
+      again.addEventListener('click', function(){ qi = 0; renderQ(); });
+      qbox.appendChild(again);
+      celebrate(26);
+      return;
+    }
+    var q = QZ[qi];
+    qbox.appendChild(el('p','q', q.q));
+    var wrap = el('div','opts'), react = el('p','react','');
+    react.setAttribute('aria-live','polite');
+    var nextBtn = el('button','btn', qi === QZ.length-1 ? 'See result' : 'Next'); nextBtn.type = 'button'; nextBtn.hidden = true;
+    q.o.forEach(function(o){
+      var b = el('button','opt', o[0]); b.type = 'button';
+      b.addEventListener('click', function(){
+        wrap.querySelectorAll('.opt').forEach(function(x){ x.disabled = true; });
+        b.classList.add('pick');
+        react.textContent = o[1];
+        nextBtn.hidden = false;
+      });
+      wrap.appendChild(b);
+    });
+    nextBtn.addEventListener('click', function(){ qi++; renderQ(); });
+    qbox.appendChild(wrap); qbox.appendChild(react); qbox.appendChild(nextBtn);
+    var foot = el('div','qfoot'); foot.appendChild(el('span','', 'Question ' + (qi+1) + ' of ' + QZ.length));
+    qbox.appendChild(foot);
+  }
+  renderQ();
+
+  /* ---------- perks ---------- */
+  var CP = [
+    'One perfect hot chocolate or ice cream. Your choice.',
+    'A movie night where you pick the movie.',
+    'One day where you get to choose everything.',
+    'A good listener whenever you need one, with no advice unless you ask.',
+    'A playlist made just for your mood.',
+    'A small surprise, to be revealed later.'
+  ];
+  var cw2 = $('#coupons');
+  CP.forEach(function(t, i){
+    var b = el('button','coupon'); b.type = 'button'; b.setAttribute('aria-pressed','false');
+    b.innerHTML = '<span class="in"><span class="f"><strong></strong><span>Tap to open</span></span><span class="b"><span></span><small>Valid: forever</small></span></span>';
+    b.querySelector('strong').textContent = 'Perk ' + (i+1);
+    b.querySelector('.b > span').textContent = t;
+    b.addEventListener('click', function(){
+      var open = b.classList.toggle('open');
+      b.setAttribute('aria-pressed', open ? 'true':'false');
+      if (open) burstAtEl(b, 14);
+    });
+    cw2.appendChild(b);
+  });
+
+  /* ---------- forbidden button ---------- */
+  var nope = $('#nope'), arena = $('#arena2'), tries = 0, NEED = 5;
+  var NOPE_TXT = ["Don't press this","I said don't!","You can't catch me","Okay, one more try","So stubborn","Fine, press it"];
+  function dodge(){
+    if (tries >= NEED) return;
+    tries++;
+    nope.textContent = NOPE_TXT[Math.min(tries, NOPE_TXT.length-1)];
+    var maxX = Math.max(0, arena.clientWidth - nope.offsetWidth - 8);
+    var maxY = Math.max(0, arena.clientHeight - nope.offsetHeight - 8);
+    if (tries >= NEED){
+      nope.style.left = (arena.clientWidth/2 - nope.offsetWidth/2) + 'px';
+      nope.style.top = (arena.clientHeight/2 - nope.offsetHeight/2) + 'px';
+    } else {
+      nope.style.left = (4 + Math.random()*maxX) + 'px';
+      nope.style.top = (4 + Math.random()*maxY) + 'px';
+    }
+  }
+  nope.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') dodge(); });
+  nope.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse' && tries < NEED){ e.preventDefault(); dodge(); } });
+  nope.addEventListener('click', function(e){
+    if (tries < NEED){ e.preventDefault(); if (tries === 0) dodge(); return; }
+    var f = $('#finale');
+    f.hidden = false;
+    f.querySelector('.panel').classList.remove('reveal'); void f.offsetWidth; f.querySelector('.panel').classList.add('reveal');
+    nope.hidden = true;
+    celebrate(44);
+    f.scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'});
+  });
+  $('#againFx').addEventListener('click', function(){ celebrate(44); });
+})();
+</script>
+
+</body></html>
